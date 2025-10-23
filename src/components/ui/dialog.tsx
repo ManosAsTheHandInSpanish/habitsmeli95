@@ -12,12 +12,12 @@ const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => {
   return (
     <>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="fixed inset-0 bg-black/50"
             onClick={() => onOpenChange?.(false)}
           />
-          <div className="relative z-50">{children}</div>
+          <div className="relative z-50 w-full max-w-lg max-h-[90vh] overflow-y-auto">{children}</div>
         </div>
       )}
     </>
@@ -31,7 +31,7 @@ const DialogContent = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "relative bg-white rounded-lg shadow-lg p-6 w-full max-w-lg mx-4",
+      "relative bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full",
       className
     )}
     {...props}
