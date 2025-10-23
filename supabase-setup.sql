@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS habits (
   description TEXT,
   color TEXT NOT NULL,
   icon TEXT NOT NULL,
+  frequency TEXT NOT NULL DEFAULT 'daily' CHECK (frequency IN ('daily', 'weekly', 'monthly')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   is_archived BOOLEAN DEFAULT false
 );

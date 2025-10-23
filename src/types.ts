@@ -1,3 +1,5 @@
+export type HabitFrequency = "daily" | "weekly" | "monthly";
+
 export interface Habit {
   id: string;
   user_id: string;
@@ -5,6 +7,7 @@ export interface Habit {
   description?: string;
   color: string;
   icon: string;
+  frequency: HabitFrequency;
   created_at: string;
   is_archived: boolean;
 }
@@ -41,4 +44,10 @@ export const HABIT_COLORS = [
   "#FFD9B3", // Orange pastel
   "#B3FFE6", // Turquoise pastel
   "#E6B3FF", // Lavande pastel
+];
+
+export const HABIT_FREQUENCIES = [
+  { value: "daily" as HabitFrequency, label: "Quotidien" },
+  { value: "weekly" as HabitFrequency, label: "Hebdomadaire" },
+  { value: "monthly" as HabitFrequency, label: "Mensuel" },
 ];

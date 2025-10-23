@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import type { Habit, Completion } from "../types";
+import type { Habit, Completion, HabitFrequency } from "../types";
 import { getTodayString } from "./utils";
 
 /**
@@ -24,6 +24,7 @@ export async function createHabit(habit: {
   description?: string;
   color: string;
   icon: string;
+  frequency: HabitFrequency;
 }): Promise<Habit> {
   const {
     data: { user },
@@ -38,6 +39,7 @@ export async function createHabit(habit: {
       description: habit.description || null,
       color: habit.color,
       icon: habit.icon,
+      frequency: habit.frequency,
       is_archived: false,
     })
     .select()
@@ -57,6 +59,7 @@ export async function updateHabit(
     description?: string;
     color?: string;
     icon?: string;
+    frequency?: HabitFrequency;
   }
 ): Promise<Habit> {
   const { data, error } = await supabase

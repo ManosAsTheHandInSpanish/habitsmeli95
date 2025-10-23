@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import type { Habit } from "../types";
-import { HABIT_ICONS, HABIT_COLORS } from "../types";
+import type { Habit, HabitFrequency } from "../types";
+import { HABIT_ICONS, HABIT_COLORS, HABIT_FREQUENCIES } from "../types";
 import { createHabit, updateHabit } from "../lib/db";
 import {
   Dialog,
@@ -32,6 +32,7 @@ export function HabitDialog({
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState(HABIT_ICONS[0]);
   const [color, setColor] = useState(HABIT_COLORS[0]);
+  const [frequency, setFrequency] = useState<HabitFrequency>("daily");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -41,11 +42,13 @@ export function HabitDialog({
       setDescription(habit.description || "");
       setIcon(habit.icon);
       setColor(habit.color);
+      setFrequency(habit.frequency);
     } else {
       setName("");
       setDescription("");
       setIcon(HABIT_ICONS[0]);
       setColor(HABIT_COLORS[0]);
+      setFrequency("daily");
     }
     setError("");
   }, [habit, open]);
@@ -78,6 +81,7 @@ export function HabitDialog({
           description: description.trim() || undefined,
           icon,
           color,
+          frequency,
         });
       } else {
         await createHabit({
@@ -85,6 +89,7 @@ export function HabitDialog({
           description: description.trim() || undefined,
           icon,
           color,
+          frequency,
         });
       }
       onSuccess();
@@ -138,6 +143,23 @@ export function HabitDialog({
             <p className="text-xs text-muted-foreground">
               {description.length}/200 caractères
             </p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="frequency">Fréquence</Label>
+            <select
+              id="frequency"
+              value={frequency}
+              onChange={(e) => setFrequency(e.target.value as HabitFrequency)}
+              disabled={loading}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {HABIT_FREQUENCIES.map((freq) => (
+                <option key={freq.value} value={freq.value}>
+                  {freq.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="space-y-2">
