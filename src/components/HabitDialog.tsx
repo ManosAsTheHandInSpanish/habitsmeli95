@@ -142,13 +142,13 @@ export function HabitDialog({
 
           <div className="space-y-2">
             <Label>Icône</Label>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin">
               {HABIT_ICONS.map((emoji) => (
                 <button
                   key={emoji}
                   type="button"
                   onClick={() => setIcon(emoji)}
-                  className={`text-2xl p-2 rounded-lg border-2 transition-all ${
+                  className={`text-2xl p-3 rounded-lg border-2 transition-all flex-shrink-0 snap-start ${
                     icon === emoji
                       ? "border-primary bg-primary/10 scale-110"
                       : "border-gray-200 hover:border-primary/50"
@@ -163,13 +163,13 @@ export function HabitDialog({
 
           <div className="space-y-2">
             <Label>Couleur</Label>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-thin">
               {HABIT_COLORS.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className={`h-10 rounded-lg border-2 transition-all ${
+                  className={`h-12 w-12 rounded-lg border-2 transition-all flex-shrink-0 snap-start ${
                     color === c
                       ? "border-gray-800 scale-110"
                       : "border-gray-200 hover:border-gray-400"
