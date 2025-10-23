@@ -1,0 +1,13 @@
+# Ignorer les dossiers mobiles (pas nécessaires pour le web)
+android/
+ios/
+
+# Ignorer les fichiers de développement
+node_modules/
+.git/
+*.log
+.DS_Store
+
+# Ignorer les guides mobiles
+TESTFLIGHT_GUIDE.md
+TESTFLIGHT_CHECKLIST.md

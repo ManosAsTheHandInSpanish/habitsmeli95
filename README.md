@@ -1,6 +1,8 @@
-# Habit Tracker App 📱
+# Habit Tracker App 🌐📱
 
-Une **application mobile native** de suivi d'habitudes développée avec React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Supabase et Capacitor.
+Une **application web et mobile** de suivi d'habitudes développée avec React, TypeScript, Vite, Tailwind CSS, shadcn/ui, Supabase et Capacitor.
+
+Accessible depuis **n'importe quel navigateur** ou en tant qu'**app mobile native** iOS/Android !
 
 ## ✨ Fonctionnalités
 
@@ -33,6 +35,48 @@ Le script créera :
 # Installer les dépendances
 npm install
 ```
+
+## 🌐 Déployer en tant que Web App (RECOMMANDÉ)
+
+**Votre app est prête pour le web !** Déployez-la en quelques minutes sur Vercel, Netlify ou GitHub Pages.
+
+👉 **Guide complet de déploiement** : [DEPLOYMENT_WEB.md](./DEPLOYMENT_WEB.md)
+
+### Déploiement rapide sur Vercel (5 minutes)
+
+```bash
+# 1. Installer Vercel CLI
+npm install -g vercel
+
+# 2. Déployer
+vercel
+
+# 3. Production
+vercel --prod
+```
+
+**Résultat** : URL publique instantanée → `https://habit-tracker-xxxxx.vercel.app`
+
+### Ou via GitHub + Vercel (encore plus simple)
+
+1. Pusher le code sur GitHub
+2. Connecter le repo à Vercel
+3. Cliquer sur "Deploy"
+4. ✅ En ligne en 2-3 minutes !
+
+### Tester en local
+
+```bash
+# Serveur de développement
+npm run dev
+# Ouvrir http://localhost:5173
+
+# Build de production
+npm run build
+npm run preview
+```
+
+---
 
 ## 🍎 Tester sur votre iPhone avec TestFlight
 
