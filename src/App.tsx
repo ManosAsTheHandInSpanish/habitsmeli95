@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { getHabits, getCompletions } from "./lib/db";
 import { getHabitWithStats, formatDate, getMotivationEmoji } from "./lib/utils";
+import { initializeCapacitor } from "./lib/capacitor";
 import type { Habit, Completion, HabitWithStats } from "./types";
 import { Auth } from "./components/Auth";
 import { HabitDialog } from "./components/HabitDialog";
@@ -21,6 +22,11 @@ function App() {
   const [activeTab, setActiveTab] = useState<Tab>("today");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | undefined>();
+
+  // Initialize Capacitor on mount
+  useEffect(() => {
+    initializeCapacitor();
+  }, []);
 
   // Check auth session
   useEffect(() => {
