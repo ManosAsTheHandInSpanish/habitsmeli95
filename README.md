@@ -34,6 +34,23 @@ Le script créera :
 npm install
 ```
 
+## 🍎 Tester sur votre iPhone avec TestFlight
+
+**Vous voulez installer l'app sur votre iPhone ?**
+
+👉 **Consultez le guide complet** : [TESTFLIGHT_GUIDE.md](./TESTFLIGHT_GUIDE.md)
+
+📋 **Checklist rapide** : [TESTFLIGHT_CHECKLIST.md](./TESTFLIGHT_CHECKLIST.md)
+
+**Résumé rapide** :
+1. Compte Apple Developer requis (99$/an)
+2. Build l'app dans Xcode
+3. Upload vers App Store Connect
+4. Configurer TestFlight
+5. Installer via TestFlight sur iPhone
+
+⏱️ **Temps estimé première fois** : 30-60 minutes
+
 ## 📱 Développement Mobile (Recommandé)
 
 ### Android
