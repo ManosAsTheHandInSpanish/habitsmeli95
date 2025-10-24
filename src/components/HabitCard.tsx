@@ -1,6 +1,7 @@
 import { useState } from "react";
-import type { HabitWithStats } from "../types";
+import type { HabitWithStats, ViewPeriod, Completion } from "../types";
 import { toggleCompletion, deleteHabit } from "../lib/db";
+import { calculatePeriodStats } from "../lib/utils";
 import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -18,15 +19,23 @@ import {
 
 interface HabitCardProps {
   habit: HabitWithStats;
+  viewPeriod: ViewPeriod;
+  completions: Completion[];
   onToggle: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function HabitCard({ habit, onToggle, onEdit, onDelete }: HabitCardProps) {
+export function HabitCard({ habit, viewPeriod, completions, onToggle, onEdit, onDelete }: HabitCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isTogglingCompletion, setIsTogglingCompletion] = useState(false);
+
+  // Calculate period stats
+  const periodStats = calculatePeriodStats(habit, completions, viewPeriod);
+  const periodLabel = viewPeriod === "daily" ? "aujourd'hui" :
+                      viewPeriod === "weekly" ? "cette semaine" :
+                      viewPeriod === "monthly" ? "ce mois" : "cette année";
 
   const handleToggle = async () => {
     if (isTogglingCompletion) return;
@@ -95,23 +104,23 @@ export function HabitCard({ habit, onToggle, onEdit, onDelete }: HabitCardProps)
                 </div>
               )}
               <div>
-                <span className="font-medium">{habit.totalCompletions}</span> validations
+                <span className="font-medium">{periodStats.completionsInPeriod}/{periodStats.expectedCompletions}</span> {periodLabel}
               </div>
               <div>
                 <span
                   className="font-medium"
                   style={{
                     color:
-                      habit.completionRate >= 80
+                      periodStats.periodRate >= 80
                         ? "#10b981"
-                        : habit.completionRate >= 50
+                        : periodStats.periodRate >= 50
                         ? "#f59e0b"
                         : "#ef4444",
                   }}
                 >
-                  {habit.completionRate}%
+                  {periodStats.periodRate}%
                 </span>{" "}
-                de réussite
+                sur la période
               </div>
             </div>
           </div>

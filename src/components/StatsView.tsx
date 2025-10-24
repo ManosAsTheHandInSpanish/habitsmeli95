@@ -1,11 +1,14 @@
-import type { HabitWithStats } from "../types";
+import type { HabitWithStats, ViewPeriod, Completion } from "../types";
+import { calculatePeriodStats } from "../lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 interface StatsViewProps {
   habits: HabitWithStats[];
+  viewPeriod: ViewPeriod;
+  completions: Completion[];
 }
 
-export function StatsView({ habits }: StatsViewProps) {
+export function StatsView({ habits, viewPeriod, completions }: StatsViewProps) {
   if (habits.length === 0) {
     return (
       <div className="text-center py-12">
@@ -16,22 +19,38 @@ export function StatsView({ habits }: StatsViewProps) {
     );
   }
 
+  // Calculate period stats for all habits
+  const periodStatsAll = habits.map((habit) =>
+    calculatePeriodStats(habit, completions, viewPeriod)
+  );
+
   // Calculate global stats
-  const totalCompletions = habits.reduce(
-    (sum, habit) => sum + habit.totalCompletions,
+  const totalCompletionsInPeriod = periodStatsAll.reduce(
+    (sum, stat) => sum + stat.completionsInPeriod,
     0
   );
 
-  const globalCompletionRate =
-    habits.reduce((sum, habit) => sum + habit.completionRate, 0) / habits.length;
+  const totalExpectedInPeriod = periodStatsAll.reduce(
+    (sum, stat) => sum + stat.expectedCompletions,
+    0
+  );
+
+  const periodCompletionRate = totalExpectedInPeriod > 0
+    ? Math.round((totalCompletionsInPeriod / totalExpectedInPeriod) * 100)
+    : 0;
 
   const bestStreak = Math.max(...habits.map((h) => h.bestStreak));
 
   const activeStreaks = habits.filter((h) => h.currentStreak > 0).length;
 
-  // Top 3 habits by completion rate
-  const topHabits = [...habits]
-    .sort((a, b) => b.completionRate - a.completionRate)
+  // Top 3 habits by period completion rate
+  const habitsWithPeriodStats = habits.map((habit, index) => ({
+    ...habit,
+    periodStats: periodStatsAll[index],
+  }));
+
+  const topHabits = [...habitsWithPeriodStats]
+    .sort((a, b) => b.periodStats.periodRate - a.periodStats.periodRate)
     .slice(0, 3);
 
   const medals = ["🥇", "🥈", "🥉"];
@@ -43,12 +62,12 @@ export function StatsView({ habits }: StatsViewProps) {
         <Card className="bg-white/80 backdrop-blur-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Taux de réussite global
+              Taux de réussite {viewPeriod === "daily" ? "du jour" : viewPeriod === "weekly" ? "de la semaine" : viewPeriod === "monthly" ? "du mois" : "de l'année"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
-              {Math.round(globalCompletionRate)}%
+              {periodCompletionRate}%
             </div>
           </CardContent>
         </Card>
@@ -56,12 +75,12 @@ export function StatsView({ habits }: StatsViewProps) {
         <Card className="bg-white/80 backdrop-blur-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total de validations
+              Validations {viewPeriod === "daily" ? "du jour" : viewPeriod === "weekly" ? "de la semaine" : viewPeriod === "monthly" ? "du mois" : "de l'année"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-secondary">
-              {totalCompletions}
+              {totalCompletionsInPeriod}
             </div>
           </CardContent>
         </Card>
@@ -112,8 +131,8 @@ export function StatsView({ habits }: StatsViewProps) {
               <div className="flex-1">
                 <h4 className="font-semibold">{habit.name}</h4>
                 <p className="text-sm text-muted-foreground">
-                  {habit.completionRate}% de réussite • {habit.totalCompletions}{" "}
-                  validations
+                  {habit.periodStats.periodRate}% de réussite • {habit.periodStats.completionsInPeriod}/{habit.periodStats.expectedCompletions}{" "}
+                  {viewPeriod === "daily" ? "aujourd'hui" : viewPeriod === "weekly" ? "cette semaine" : viewPeriod === "monthly" ? "ce mois" : "cette année"}
                 </p>
               </div>
             </div>
@@ -127,7 +146,7 @@ export function StatsView({ habits }: StatsViewProps) {
           <CardTitle>Toutes les habitudes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {habits.map((habit) => (
+          {habitsWithPeriodStats.map((habit) => (
             <div
               key={habit.id}
               className="flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50/50 transition-colors"
@@ -141,15 +160,15 @@ export function StatsView({ habits }: StatsViewProps) {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm text-muted-foreground">
                   <div>
                     <span className="font-medium text-foreground">
-                      {habit.completionRate}%
+                      {habit.periodStats.periodRate}%
                     </span>{" "}
-                    réussite
+                    sur période
                   </div>
                   <div>
                     <span className="font-medium text-foreground">
-                      {habit.totalCompletions}
+                      {habit.periodStats.completionsInPeriod}/{habit.periodStats.expectedCompletions}
                     </span>{" "}
-                    validations
+                    {viewPeriod === "daily" ? "jour" : viewPeriod === "weekly" ? "semaine" : viewPeriod === "monthly" ? "mois" : "année"}
                   </div>
                   <div>
                     <span className="font-medium text-foreground">

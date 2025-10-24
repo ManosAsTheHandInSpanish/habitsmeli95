@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { supabase } from "./lib/supabase";
 import { getHabits, getCompletions } from "./lib/db";
-import { getHabitWithStats, formatDate, getMotivationEmoji } from "./lib/utils";
+import { getHabitWithStats, getMotivationEmoji, formatPeriod, calculatePeriodStats } from "./lib/utils";
 import { initializeCapacitor } from "./lib/capacitor";
-import type { Habit, Completion, HabitWithStats } from "./types";
+import type { Habit, Completion, HabitWithStats, ViewPeriod } from "./types";
+import { VIEW_PERIODS } from "./types";
 import { Auth } from "./components/Auth";
 import { HabitDialog } from "./components/HabitDialog";
 import { HabitCard } from "./components/HabitCard";
@@ -20,6 +21,7 @@ function App() {
   const [completions, setCompletions] = useState<Completion[]>([]);
   const [habitsWithStats, setHabitsWithStats] = useState<HabitWithStats[]>([]);
   const [activeTab, setActiveTab] = useState<Tab>("today");
+  const [viewPeriod, setViewPeriod] = useState<ViewPeriod>("daily");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingHabit, setEditingHabit] = useState<Habit | undefined>();
 
@@ -100,10 +102,13 @@ function App() {
     return <Auth />;
   }
 
-  // Calculate today's progress
-  const completedToday = habitsWithStats.filter((h) => h.isCompletedToday).length;
-  const totalHabits = habitsWithStats.length;
-  const todayRate = totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
+  // Calculate period progress
+  const periodStats = habitsWithStats.map((habit) =>
+    calculatePeriodStats(habit, completions, viewPeriod)
+  );
+  const totalExpected = periodStats.reduce((sum, stat) => sum + stat.expectedCompletions, 0);
+  const totalCompleted = periodStats.reduce((sum, stat) => sum + stat.completionsInPeriod, 0);
+  const periodRate = totalExpected > 0 ? Math.round((totalCompleted / totalExpected) * 100) : 0;
 
   return (
     <div className="min-h-screen pb-20">
@@ -121,8 +126,21 @@ function App() {
           </div>
 
           <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="text-sm text-muted-foreground">
-              {formatDate(new Date())}
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-muted-foreground">
+                {formatPeriod(viewPeriod)}
+              </div>
+              <select
+                value={viewPeriod}
+                onChange={(e) => setViewPeriod(e.target.value as ViewPeriod)}
+                className="text-sm border rounded px-2 py-1 bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                {VIEW_PERIODS.map((period) => (
+                  <option key={period.value} value={period.value}>
+                    {period.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
@@ -163,21 +181,23 @@ function App() {
         {activeTab === "today" ? (
           <>
             {/* Progress bar */}
-            {totalHabits > 0 && (
+            {totalExpected > 0 && (
               <div className="mb-6 p-4 bg-white/80 backdrop-blur-sm rounded-lg shadow-sm">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Progression du jour</span>
-                  <span className="text-2xl">{getMotivationEmoji(todayRate)}</span>
+                  <span className="text-sm font-medium">
+                    Progression de la {viewPeriod === "daily" ? "journée" : viewPeriod === "weekly" ? "semaine" : viewPeriod === "monthly" ? "mois" : "année"}
+                  </span>
+                  <span className="text-2xl">{getMotivationEmoji(periodRate)}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-pink-400 to-purple-400 transition-all duration-300"
-                      style={{ width: `${todayRate}%` }}
+                      style={{ width: `${periodRate}%` }}
                     />
                   </div>
                   <span className="text-sm font-medium min-w-[4rem] text-right">
-                    {completedToday}/{totalHabits} ({todayRate}%)
+                    {totalCompleted}/{totalExpected} ({periodRate}%)
                   </span>
                 </div>
               </div>
@@ -200,6 +220,8 @@ function App() {
                   <HabitCard
                     key={habit.id}
                     habit={habit}
+                    viewPeriod={viewPeriod}
+                    completions={completions}
                     onToggle={loadData}
                     onEdit={() => handleOpenDialog(habit)}
                     onDelete={loadData}
@@ -209,7 +231,7 @@ function App() {
             )}
           </>
         ) : (
-          <StatsView habits={habitsWithStats} />
+          <StatsView habits={habitsWithStats} viewPeriod={viewPeriod} completions={completions} />
         )}
       </main>
 

@@ -1,6 +1,6 @@
-import { format } from "date-fns";
+import { format, startOfWeek, startOfMonth, startOfYear, endOfWeek, endOfMonth, endOfYear } from "date-fns";
 import { fr } from "date-fns/locale";
-import type { Completion, Habit, HabitWithStats } from "../types";
+import type { Completion, Habit, HabitWithStats, ViewPeriod } from "../types";
 
 /**
  * Retourne la date du jour au format YYYY-MM-DD
@@ -145,4 +145,131 @@ export function getMotivationEmoji(rate: number): string {
   if (rate === 100) return "🎉";
   if (rate >= 50) return "💪";
   return "🌱";
+}
+
+/**
+ * Retourne le début de la période actuelle
+ */
+export function getStartOfPeriod(period: ViewPeriod, date: Date = new Date()): Date {
+  switch (period) {
+    case "daily":
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    case "weekly":
+      return startOfWeek(date, { locale: fr });
+    case "monthly":
+      return startOfMonth(date);
+    case "yearly":
+      return startOfYear(date);
+  }
+}
+
+/**
+ * Retourne la fin de la période actuelle
+ */
+export function getEndOfPeriod(period: ViewPeriod, date: Date = new Date()): Date {
+  switch (period) {
+    case "daily":
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+    case "weekly":
+      return endOfWeek(date, { locale: fr });
+    case "monthly":
+      return endOfMonth(date);
+    case "yearly":
+      return endOfYear(date);
+  }
+}
+
+/**
+ * Filtre les completions dans une période donnée
+ */
+export function getCompletionsInPeriod(
+  completions: Completion[],
+  startDate: Date,
+  endDate: Date
+): Completion[] {
+  const start = formatDateToYMD(startDate);
+  const end = formatDateToYMD(endDate);
+
+  return completions.filter((c) => {
+    return c.date >= start && c.date <= end;
+  });
+}
+
+/**
+ * Calcule le nombre de périodes complétées selon la fréquence de l'habitude
+ */
+export function getExpectedCompletionsInPeriod(
+  habit: Habit,
+  startDate: Date,
+  endDate: Date
+): number {
+  const habitStart = new Date(habit.created_at);
+  const effectiveStart = habitStart > startDate ? habitStart : startDate;
+
+  // Si l'habitude n'existait pas encore dans cette période
+  if (effectiveStart > endDate) return 0;
+
+  const daysSinceStart = Math.floor(
+    (endDate.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)
+  ) + 1;
+
+  switch (habit.frequency) {
+    case "daily":
+      return daysSinceStart;
+    case "weekly":
+      return Math.floor(daysSinceStart / 7);
+    case "monthly":
+      // Approximation : 30 jours par mois
+      return Math.floor(daysSinceStart / 30);
+    default:
+      return daysSinceStart;
+  }
+}
+
+/**
+ * Calcule les statistiques pour une période donnée
+ */
+export function calculatePeriodStats(
+  habit: Habit,
+  completions: Completion[],
+  period: ViewPeriod
+): {
+  completionsInPeriod: number;
+  expectedCompletions: number;
+  periodRate: number;
+} {
+  const startDate = getStartOfPeriod(period);
+  const endDate = getEndOfPeriod(period);
+
+  const habitCompletions = completions.filter((c) => c.habit_id === habit.id);
+  const periodCompletions = getCompletionsInPeriod(habitCompletions, startDate, endDate);
+
+  const expected = getExpectedCompletionsInPeriod(habit, startDate, endDate);
+  const actual = periodCompletions.length;
+
+  const rate = expected > 0 ? Math.round((actual / expected) * 100) : 0;
+
+  return {
+    completionsInPeriod: actual,
+    expectedCompletions: expected,
+    periodRate: rate,
+  };
+}
+
+/**
+ * Formate une période en texte
+ */
+export function formatPeriod(period: ViewPeriod, date: Date = new Date()): string {
+  switch (period) {
+    case "daily":
+      return format(date, "EEEE d MMMM yyyy", { locale: fr });
+    case "weekly":
+      const weekStart = startOfWeek(date, { locale: fr });
+      const weekEnd = endOfWeek(date, { locale: fr });
+      return `Semaine du ${format(weekStart, "d MMM", { locale: fr })} au ${format(weekEnd, "d MMM yyyy", { locale: fr })}`;
+    case "monthly":
+      return format(date, "MMMM yyyy", { locale: fr });
+    case "yearly":
+      return format(date, "yyyy", { locale: fr });
+  }
 }

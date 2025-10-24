@@ -1,5 +1,7 @@
 export type HabitFrequency = "daily" | "weekly" | "monthly";
 
+export type ViewPeriod = "daily" | "weekly" | "monthly" | "yearly";
+
 export interface Habit {
   id: string;
   user_id: string;
@@ -50,4 +52,11 @@ export const HABIT_FREQUENCIES = [
   { value: "daily" as HabitFrequency, label: "Quotidien" },
   { value: "weekly" as HabitFrequency, label: "Hebdomadaire" },
   { value: "monthly" as HabitFrequency, label: "Mensuel" },
+];
+
+export const VIEW_PERIODS = [
+  { value: "daily" as ViewPeriod, label: "Jour" },
+  { value: "weekly" as ViewPeriod, label: "Semaine" },
+  { value: "monthly" as ViewPeriod, label: "Mois" },
+  { value: "yearly" as ViewPeriod, label: "Année" },
 ];
